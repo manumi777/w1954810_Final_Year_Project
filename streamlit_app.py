@@ -1,8 +1,3 @@
-"""
-Fraud Detection Dashboard - Final Submission (Professional Edition)
-Full Ash Background + High-Contrast Card System
-"""
-
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
