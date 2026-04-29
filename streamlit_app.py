@@ -18,7 +18,7 @@ from sklearn.metrics import (
     precision_score, recall_score
 )
 
-# ─── Page Config ───────────────────────────────────────────────
+# Page Config 
 st.set_page_config(
     page_title="Fraud Detection Dashboard",
     page_icon="🔍",
@@ -26,7 +26,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ─── Professional "Ash & White" Style ──────────────────────────
+# Professional "Ash & White" Style 
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -99,10 +99,43 @@ st.markdown("""
     .alert-card { border: 1px solid #fee2e2; border-radius: 14px; padding: 18px; margin-bottom: 14px; display: flex; gap: 16px; position: relative; background: white; }
     .risk-score { background: #fee2e2; color: #ef4444; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; }
     .header-card { text-align: center; padding: 20px 0; }
+
+
+    /* ─── FIX FILTER INPUTS: Light Ash/Grey Background + Black Text ─── */
+    div[data-baseweb="input"] input {
+        background-color: #e5e7eb !important;
+        color: #0f172a !important;
+        border-radius: 12px !important;
+        border: 1px solid #d1d5db !important;
+        font-weight: 600 !important;
+        caret-color: #0f172a !important;
+    }
+    div[data-baseweb="input"] { background-color: #e5e7eb !important; border-radius: 12px !important; }
+    div[data-baseweb="input"] input::placeholder { color: #111827 !important; opacity: 0.75 !important; }
+    div[data-baseweb="select"] > div {
+        background-color: #e5e7eb !important;
+        color: #0f172a !important;
+        border-radius: 12px !important;
+        border: 1px solid #d1d5db !important;
+        min-height: 42px !important;
+        box-shadow: none !important;
+    }
+    div[data-baseweb="select"] span, div[data-baseweb="select"] div { color: #0f172a !important; font-weight: 600 !important; }
+    div[data-baseweb="select"] svg { color: #0f172a !important; fill: #0f172a !important; }
+    div[data-baseweb="popover"] { background-color: #ffffff !important; }
+    ul[role="listbox"] { background-color: #ffffff !important; color: #0f172a !important; }
+    ul[role="listbox"] li { color: #0f172a !important; background-color: #ffffff !important; }
+    ul[role="listbox"] li:hover { background-color: #f1f5f9 !important; }
+    div[data-baseweb="input"] input:focus, div[data-baseweb="select"] > div:focus-within {
+        outline: none !important;
+        box-shadow: 0 0 0 2px #cbd5e1 !important;
+        border-color: #cbd5e1 !important;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
-# ─── Data Engine ───────────────────────────────────────────────
+# Data Engine 
 @st.cache_data(show_spinner=True)
 def get_data():
     file_id = "1QtGmqlvamOfBQK7hB2BWzffNrbqryvjU"
@@ -215,7 +248,7 @@ def get_data():
 
 data = get_data()
 
-# ─── Header ────────────────────────────────────────────────────
+# Header
 with st.container(border=True):
     st.markdown("""
     <div class="header-card" style="text-align:center; padding:18px 0 14px 0;">
@@ -225,7 +258,7 @@ with st.container(border=True):
     </div>
     """, unsafe_allow_html=True)
 
-# ─── KPI Cards ─────────────────────────────────────────────────
+# KPI Cards 
 st.markdown(f"""
 <div class="kpi-grid">
     <div class="kpi-box">
@@ -255,7 +288,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# ─── Row 1: Charts ─────────────────────────────────────────────
+# Row 1: Charts
 r1c1, r1c2 = st.columns(2, gap="medium")
 with r1c1:
     with st.container(border=True):
@@ -294,7 +327,7 @@ with r1c2:
         )
         st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
 
-# ─── Row 2: Model Performance + Confusion Matrix ───────────────
+# Row 2: Model Performance + Confusion Matrix 
 r2c1, r2c2 = st.columns(2, gap="medium")
 with r2c1:
     with st.container(border=True):
@@ -332,7 +365,7 @@ with r2c2:
         </div>
         """, unsafe_allow_html=True)
 
-# ─── Row 3: Threshold + Feature Importance ─────────────────────
+# Row 3: Threshold + Feature Importance 
 t1, t2 = st.columns(2)
 with t1:
     with st.container(border=True):
@@ -368,7 +401,7 @@ with t2:
         )
         st.plotly_chart(fig_shap, use_container_width=True, config={'displayModeBar': False})
 
-# ─── Row 4: Transaction Table + Priority Alerts ─────────────────
+#  Row 4: Transaction Table + Priority Alerts 
 r3c1, r3c2 = st.columns([2.5, 1.5])
 with r3c1:
     with st.container(border=True):
