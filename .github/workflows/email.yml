@@ -19,7 +19,6 @@ jobs:
           subject: "🚨 HIGH ALERT — Fraud Detected"
           to: ${{ secrets.MAIL_RECIPIENT }}
           from: Fraud Detection System
-          content_type: text/plain
           body: |
             HIGH RISK FRAUD ALERT
             ─────────────────────────────
