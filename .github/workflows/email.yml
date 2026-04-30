@@ -1,9 +1,7 @@
 name: Fraud Alert Email
-
 on:
   repository_dispatch:
     types: [fraud_alert]
-
 jobs:
   send_email:
     runs-on: ubuntu-latest
