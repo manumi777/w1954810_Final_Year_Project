@@ -1,7 +1,9 @@
 name: Fraud Alert Email
+
 on:
   repository_dispatch:
     types: [fraud_alert]
+
 jobs:
   send_email:
     runs-on: ubuntu-latest
@@ -11,11 +13,13 @@ jobs:
         with:
           server_address: smtp.gmail.com
           server_port: 465
+          secure: true
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: "🚨 HIGH ALERT — Fraud Detected"
           to: ${{ secrets.MAIL_RECIPIENT }}
           from: Fraud Detection System
+          content_type: text/plain
           body: |
             HIGH RISK FRAUD ALERT
             ─────────────────────────────
