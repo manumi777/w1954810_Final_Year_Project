@@ -159,8 +159,29 @@ def get_data():
     output  = "fraud_filtered.csv"
 
     if not os.path.exists(output):
-        with st.spinner("Downloading fraud_filtered dataset from Google Drive..."):
+    with st.spinner("Downloading fraud_filtered dataset from Google Drive..."):
+        try:
+            # Method 1: fuzzy gdown
             gdown.download(id=file_id, output=output, quiet=False, fuzzy=True)
+        except Exception:
+            try:
+                # Method 2: direct uc URL
+                url = f"https://drive.google.com/uc?export=download&id={file_id}"
+                gdown.download(url, output, quiet=False)
+            except Exception:
+                try:
+                    # Method 3: requests direct download
+                    import requests as req
+                    session = req.Session()
+                    url = f"https://drive.google.com/uc?export=download&id={file_id}"
+                    response = session.get(url, stream=True)
+                    with open(output, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=32768):
+                            if chunk:
+                                f.write(chunk)
+                except Exception as e:
+                    st.error(f"All download methods failed: {e}")
+                    st.stop()
 
     if not os.path.exists(output):
         st.error("Dataset download failed. Please check the Google Drive file is shared with 'Anyone with the link can view'.")
