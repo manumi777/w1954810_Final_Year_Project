@@ -532,7 +532,10 @@ with r3c1:
 with r3c2:
     with st.container(border=True):
         st.markdown('<div class="section-title">Priority Alerts</div><div class="section-sub">Critical cases identified for manual review</div>', unsafe_allow_html=True)
-        for _, r in data['demo'].sort_values('Risk Score', ascending=False).head(5).iterrows():
+        
+        high_risk = data['demo'].sort_values('Risk Score', ascending=False).head(5)
+        
+        for _, r in high_risk.iterrows():
             st.markdown(f"""
             <div class="alert-card">
                 <div style="background:#ef4444;width:8px;height:100%;position:absolute;left:0;top:0;border-radius:14px 0 0 14px;"></div>
@@ -543,3 +546,34 @@ with r3c2:
                 <div class="risk-score">{int(r["Risk Score"]*100)}%</div>
             </div>
             """, unsafe_allow_html=True)
+            
+            if r["Risk Score"] >= 0.27 and r["Prediction"] == "Fraud":
+                status = trigger_fraud_alert(
+                    transaction_id=r["Transaction ID"],
+                    risk_score=r["Risk Score"],
+                    amount=r["amount"],
+                    tx_type=r["type"]
+                )
+                if status == 204:
+                    st.success(f"✅ Alert sent for {r['Transaction ID']}")
+                else:
+                    st.error(f"❌ Alert failed for {r['Transaction ID']} — Status {status}")
+
+        st.markdown("---")
+        st.markdown('<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px;">Manual Alert Trigger</div>', unsafe_allow_html=True)
+        
+        top_fraud = high_risk[high_risk['Prediction'] == 'Fraud'].head(1)
+        
+        if not top_fraud.empty:
+            row = top_fraud.iloc[0]
+            if st.button("🚨 Send High Alert Email", use_container_width=True):
+                status = trigger_fraud_alert(
+                    transaction_id=row["Transaction ID"],
+                    risk_score=row["Risk Score"],
+                    amount=row["amount"],
+                    tx_type=row["type"]
+                )
+                if status == 204:
+                    st.success("✅ High alert email triggered successfully")
+                else:
+                    st.error(f"❌ Failed — GitHub API returned {status}")
