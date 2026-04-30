@@ -25,9 +25,19 @@ table_html = high_risk[['amount', 'type']].to_html(index=False)
 
 html_content = f"""
 <h2 style="color:#ef4444;">🚨 Fraud Alert Report</h2>
+
 <p>The following high-risk transactions were detected:</p>
 
 {table_html}
+
+<hr>
+
+<p>
+🔗 <b>View Full Dashboard:</b><br>
+<a href="https://w1954810finalyearproject-prrtwxqdvhcbabbmyyxuwk.streamlit.app/" target="_blank">
+Open Fraud Detection Dashboard
+</a>
+</p>
 
 <p style="color:gray; font-size:12px;">
 Generated automatically by Fraud Detection System
