@@ -548,31 +548,14 @@ with r3c2:
             </div>
             """, unsafe_allow_html=True)
 
-            if r["Risk Score"] >= 0.27 and r["Prediction"] == "Fraud":
-                try:
-                    status = trigger_fraud_alert(
-                        transaction_id=r["Transaction ID"],
-                        risk_score=r["Risk Score"],
-                        amount=r["amount"],
-                        tx_type=r["type"]
-                    )
-                    if status == 204:
-                        st.success(f"✅ Alert sent for {r['Transaction ID']}")
-                    else:
-                        st.error(f"❌ Alert failed — Status {status}")
-                except KeyError:
-                    st.warning("⚠️ GITHUB_TOKEN not found in secrets — alert not sent")
-                except Exception as e:
-                    st.error(f"❌ Alert error: {e}")
-
         st.markdown("---")
         st.markdown('<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px;">Manual Alert Trigger</div>', unsafe_allow_html=True)
 
-        top_fraud = high_risk[high_risk['Prediction'] == 'Fraud'].head(1)
+        # ── FIXED: Always show button using top high-risk row ──
+        row = high_risk.iloc[0]
 
-        if not top_fraud.empty:
-            row = top_fraud.iloc[0]
-            if st.button("🚨 Send High Alert Email", use_container_width=True):
+        if st.button("🚨 Send High Alert Email", use_container_width=True):
+            if row["Transaction ID"] not in st.session_state.get("alerted", set()):
                 try:
                     status = trigger_fraud_alert(
                         transaction_id=row["Transaction ID"],
@@ -581,6 +564,7 @@ with r3c2:
                         tx_type=row["type"]
                     )
                     if status == 204:
+                        st.session_state.setdefault("alerted", set()).add(row["Transaction ID"])
                         st.success("✅ High alert email triggered successfully")
                     else:
                         st.error(f"❌ Failed — GitHub API returned {status}")
@@ -588,3 +572,5 @@ with r3c2:
                     st.warning("⚠️ GITHUB_TOKEN not found in secrets")
                 except Exception as e:
                     st.error(f"❌ Error: {e}")
+            else:
+                st.info(f"ℹ️ Alert already sent for {row['Transaction ID']}")
