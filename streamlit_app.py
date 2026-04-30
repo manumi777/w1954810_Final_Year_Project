@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import random
 import os
 import gdown
+import requests
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
@@ -17,11 +18,10 @@ from sklearn.metrics import (
     f1_score, confusion_matrix,
     precision_score, recall_score
 )
-import requests
 
+# ── GitHub Alert Function ──
 def trigger_fraud_alert(transaction_id, risk_score, amount, tx_type):
     url = "https://api.github.com/repos/manumi777/w1954810_Final_Year_Project/dispatches"
-    
     payload = {
         "event_type": "fraud_alert",
         "client_payload": {
@@ -31,15 +31,14 @@ def trigger_fraud_alert(transaction_id, risk_score, amount, tx_type):
             "type": str(tx_type)
         }
     }
-    
     headers = {
         "Authorization": f"token {st.secrets['GITHUB_TOKEN']}",
         "Accept": "application/vnd.github.v3+json"
     }
-    
     response = requests.post(url, json=payload, headers=headers)
     return response.status_code
-# Page Config 
+
+# ── Page Config ──
 st.set_page_config(
     page_title="Fraud Detection Dashboard",
     page_icon="🔍",
@@ -47,7 +46,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Professional "Ash & White" Style 
+# ── Styles ──
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -121,8 +120,6 @@ st.markdown("""
     .risk-score { background: #fee2e2; color: #ef4444; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; }
     .header-card { text-align: center; padding: 20px 0; }
 
-
-    /* ─── FIX FILTER INPUTS: Light Ash/Grey Background + Black Text ─── */
     div[data-baseweb="input"] input {
         background-color: #e5e7eb !important;
         color: #0f172a !important;
@@ -152,20 +149,18 @@ st.markdown("""
         box-shadow: 0 0 0 2px #cbd5e1 !important;
         border-color: #cbd5e1 !important;
     }
-
 </style>
 """, unsafe_allow_html=True)
 
-# Data Engine 
+# ── Data Engine ──
 @st.cache_data(show_spinner=True)
 def get_data():
     file_id = "1QtGmqlvamOfBQK7hB2BWzffNrbqryvjU"
-    url     = f"https://drive.google.com/uc?id={file_id}"
     output  = "fraud_filtered.csv"
 
     if not os.path.exists(output):
         with st.spinner("Downloading fraud_filtered dataset from Google Drive..."):
-            gdown.download(url, output, quiet=False)
+            gdown.download(id=file_id, output=output, quiet=False, fuzzy=True)
 
     if not os.path.exists(output):
         st.error("Dataset download failed. Please check the Google Drive file is shared with 'Anyone with the link can view'.")
@@ -269,7 +264,7 @@ def get_data():
 
 data = get_data()
 
-# Header
+# ── Header ──
 with st.container(border=True):
     st.markdown("""
     <div class="header-card" style="text-align:center; padding:18px 0 14px 0;">
@@ -279,7 +274,7 @@ with st.container(border=True):
     </div>
     """, unsafe_allow_html=True)
 
-# KPI Cards 
+# ── KPI Cards ──
 st.markdown(f"""
 <div class="kpi-grid">
     <div class="kpi-box">
@@ -309,7 +304,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Row 1: Charts
+# ── Row 1: Charts ──
 r1c1, r1c2 = st.columns(2, gap="medium")
 with r1c1:
     with st.container(border=True):
@@ -348,7 +343,7 @@ with r1c2:
         )
         st.plotly_chart(fig_pie, use_container_width=True, config={'displayModeBar': False})
 
-# Row 2: Model Performance + Confusion Matrix 
+# ── Row 2: Model Performance + Confusion Matrix ──
 r2c1, r2c2 = st.columns(2, gap="medium")
 with r2c1:
     with st.container(border=True):
@@ -386,7 +381,7 @@ with r2c2:
         </div>
         """, unsafe_allow_html=True)
 
-# Row 3: Threshold + Feature Importance 
+# ── Row 3: Threshold + Feature Importance ──
 t1, t2 = st.columns(2)
 with t1:
     with st.container(border=True):
@@ -422,7 +417,7 @@ with t2:
         )
         st.plotly_chart(fig_shap, use_container_width=True, config={'displayModeBar': False})
 
-#  Row 4: Transaction Table + Priority Alerts 
+# ── Row 4: Transaction Table + Priority Alerts ──
 r3c1, r3c2 = st.columns([2.5, 1.5])
 with r3c1:
     with st.container(border=True):
@@ -430,15 +425,14 @@ with r3c1:
 
         f_col1, f_col2, f_col3 = st.columns([2, 1, 1])
         search      = f_col1.text_input("Search ID...", placeholder="TX-000...", label_visibility="collapsed")
-        type_filter = f_col2.selectbox("Filter Type",        ["All Types"] + data['types'],            label_visibility="collapsed")
-        pred_filter = f_col3.selectbox("Filter Prediction",  ["All Predictions", "Legit", "Fraud"],    label_visibility="collapsed")
+        type_filter = f_col2.selectbox("Filter Type",       ["All Types"] + data['types'],           label_visibility="collapsed")
+        pred_filter = f_col3.selectbox("Filter Prediction", ["All Predictions", "Legit", "Fraud"],   label_visibility="collapsed")
 
         df_f = data['demo'].copy()
         if search:                           df_f = df_f[df_f['Transaction ID'].str.contains(search, case=False)]
         if type_filter != "All Types":       df_f = df_f[df_f['type'] == type_filter]
         if pred_filter != "All Predictions": df_f = df_f[df_f['Prediction'] == pred_filter]
 
-        # Build table rows as HTML string
         table_rows = ""
         for _, row in df_f.head(12).iterrows():
             risk_pct   = int(row['Risk Score'] * 100)
@@ -459,7 +453,6 @@ with r3c1:
                 </td>
             </tr>"""
 
-        # ── KEY FIX: components.html bypasses Streamlit's HTML sanitiser entirely ──
         components.html(f"""
         <!DOCTYPE html>
         <html>
@@ -532,27 +525,9 @@ with r3c1:
 with r3c2:
     with st.container(border=True):
         st.markdown('<div class="section-title">Priority Alerts</div><div class="section-sub">Critical cases identified for manual review</div>', unsafe_allow_html=True)
-        
+
         high_risk = data['demo'].sort_values('Risk Score', ascending=False).head(5)
-        
-        for _, r in high_risk.iterrows():
-            st.markdown(f"""
-            <div class="alert-card">
-                <div style="background:#ef4444;width:8px;height:100%;position:absolute;left:0;top:0;border-radius:14px 0 0 14px;"></div>
-                <div style="flex:1;">
-                    <div style="font-size:16px;font-weight:800;color:#0f172a;">{r["Transaction ID"]}</div>
-                    <div style="font-size:13px;color:#64748b;margin-top:2px;">${r["amount"]:,.2f} · {r["type"]}</div>
-                </div>
-                <div class="risk-score">{int(r["Risk Score"]*100)}%</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-           with r3c2:
-    with st.container(border=True):
-        st.markdown('<div class="section-title">Priority Alerts</div><div class="section-sub">Critical cases identified for manual review</div>', unsafe_allow_html=True)
-        
-        high_risk = data['demo'].sort_values('Risk Score', ascending=False).head(5)
-        
+
         for _, r in high_risk.iterrows():
             st.markdown(f"""
             <div class="alert-card">
@@ -584,9 +559,9 @@ with r3c2:
 
         st.markdown("---")
         st.markdown('<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px;">Manual Alert Trigger</div>', unsafe_allow_html=True)
-        
+
         top_fraud = high_risk[high_risk['Prediction'] == 'Fraud'].head(1)
-        
+
         if not top_fraud.empty:
             row = top_fraud.iloc[0]
             if st.button("🚨 Send High Alert Email", use_container_width=True):
