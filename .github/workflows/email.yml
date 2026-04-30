@@ -1,26 +1,29 @@
-name: Fraud Email Alerts
+name: Fraud Alert Email
 
 on:
-  schedule:
-    - cron: "30 3 * * *"
-  workflow_dispatch:
+  repository_dispatch:
+    types: [fraud_alert]
 
 jobs:
-  send-alert:
+  send_email:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
+      - name: Send fraud alert email
+        uses: dawidd6/action-send-mail@v3
         with:
-          python-version: "3.10"
-
-      - run: pip install pandas gdown
-
-      - name: Run email script
-        env:
-          EMAIL_SENDER: ${{ secrets.EMAIL_SENDER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          EMAIL_RECEIVER: ${{ secrets.EMAIL_RECEIVER }}
-        run: python send_high_risk_email.py
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: "🚨 HIGH ALERT — Fraud Detected"
+          to: ${{ secrets.MAIL_RECIPIENT }}
+          from: Fraud Detection System
+          body: |
+            HIGH RISK FRAUD ALERT
+            ─────────────────────────────
+            Transaction ID : ${{ github.event.client_payload.transaction_id }}
+            Risk Score     : ${{ github.event.client_payload.risk_score }}
+            Amount         : ${{ github.event.client_payload.amount }}
+            Type           : ${{ github.event.client_payload.type }}
+            ─────────────────────────────
+            Please review this transaction immediately in the dashboard.
