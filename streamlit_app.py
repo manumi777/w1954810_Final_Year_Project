@@ -17,7 +17,28 @@ from sklearn.metrics import (
     f1_score, confusion_matrix,
     precision_score, recall_score
 )
+import requests
 
+def trigger_fraud_alert(transaction_id, risk_score, amount, tx_type):
+    url = "https://api.github.com/repos/manumi777/w1954810_Final_Year_Project/dispatches"
+    
+    payload = {
+        "event_type": "fraud_alert",
+        "client_payload": {
+            "transaction_id": str(transaction_id),
+            "risk_score": round(float(risk_score), 4),
+            "amount": float(amount),
+            "type": str(tx_type)
+        }
+    }
+    
+    headers = {
+        "Authorization": f"token {st.secrets['GITHUB_TOKEN']}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    
+    response = requests.post(url, json=payload, headers=headers)
+    return response.status_code
 # Page Config 
 st.set_page_config(
     page_title="Fraud Detection Dashboard",
