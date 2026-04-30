@@ -28,3 +28,4 @@ jobs:
             Type           : ${{ github.event.client_payload.type }}
             ─────────────────────────────
             Please review this transaction immediately in the dashboard.
+            Dashboard: https://w1954810finalyearproject-prrtwxqdvhcbabbmyyxuwk.streamlit.app/
